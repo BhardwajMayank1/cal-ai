@@ -1,35 +1,40 @@
+import { createBrowserRouter, Navigate } from 'react-router-dom' // Fixed import
 import Login from './Pages/Login'
 import Register from './Pages/Register'
 import Protected from './protected/ProtectedRoute'
 import Goals from './Pages/Goals'
 import Home from './Pages/Home'
 import Meal from './Pages/Meal'
-import { createBrowserRouter } from 'react-router'
 
-export const router =createBrowserRouter([
+export const router = createBrowserRouter([
     {
-        path:'/login',
-        element:<Login />
+        // Redirect home domain "/" directly to "/login" (or "/home")
+        path: '/',
+        element: <Navigate to="/login" replace />
     },
     {
-        path:'/register',
-        element:<Register />
+        path: '/login',
+        element: <Login />
     },
     {
-        path:'/goals',
-        element:
-        <Protected><Goals /></Protected>
+        path: '/register',
+        element: <Register />
     },
     {
-        path:'/meal',
-        element:
-        <Protected><Meal /></Protected>
+        path: '/goals',
+        element: <Protected><Goals /></Protected>
     },
     {
-        path:'/home',
-        element:
-        <Protected><Home /></Protected>
+        path: '/meal',
+        element: <Protected><Meal /></Protected>
+    },
+    {
+        path: '/home',
+        element: <Protected><Home /></Protected>
+    },
+    {
+        // Catch-all route for invalid URLs
+        path: '*',
+        element: <Navigate to="/login" replace />
     }
-
-
 ])
