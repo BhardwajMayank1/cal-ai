@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import { useMealAnalysis } from '../hook/useMeal'
 import { useDashboard } from '../hook/useDashboard'
 

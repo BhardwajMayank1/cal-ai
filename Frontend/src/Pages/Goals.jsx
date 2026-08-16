@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGoals } from '../hook/useGoal'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 const Goals = () => {
     const { goals, loading, saveGoals } = useGoals()
