@@ -4,65 +4,74 @@ const {uploadPic} = require('../Services/ImageUpload')
 const JWT    = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-async function registerUser (req,res){
-    const{username , email , password}= req.body
-    const file = req.file
-    const result = await uploadPic(file.buffer.toString('base64'))
+async function registerUser(req, res) {
     try {
-        if(!username|| !email|| !password){
+        const { username, email, password } = req.body;
+        const file = req.file;
+
+        // 1. Validate basic inputs early
+        if (!username || !email || !password) {
             return res.status(400).json({
-                message:'please Provide Credentials'
-            })
+                message: 'Please provide credentials'
+            });
         }
 
+        // 2. Fix Mongo $or query syntax
         const isUserAlreadyExist = await userModel.findOne({
-            or:[{username},{email}]
-        })
+            $or: [{ username }, { email }]
+        });
 
-        if(isUserAlreadyExist){
+        if (isUserAlreadyExist) {
             return res.status(400).json({
-                message:"User Already Exist"
-            })
+                message: "User Already Exist"
+            });
         }
-        const hash = await bcrypt.hash(password,10)
 
-        const user = await  userModel.create({
+        // 3. Handle optional or required avatar upload safely
+        let avatarUrl = "";
+        if (file) {
+            const result = await uploadPic(file.buffer.toString('base64'));
+            avatarUrl = result.url || result.secure_url;
+        }
+
+        // 4. Hash password and create user
+        const hash = await bcrypt.hash(password, 10);
+
+        const user = await userModel.create({
             username,
             email,
-            password : hash,
-            avatar:result.url,
-        })
+            password: hash,
+            avatar: avatarUrl,
+        });
 
-        const token = JWT.sign({
-            id:user._id , username:user.username
-        },process.env.JWT_TOKEN,
-         {expiresIn:"1d"} ) 
+        const token = JWT.sign(
+            { id: user._id, username: user.username },
+            process.env.JWT_TOKEN,
+            { expiresIn: "1d" }
+        );
 
-          res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000,
-})
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000,
+        });
 
-          res.status(200).json({
-            mesaage:"user Created Succefully",
-            User:{
-                id:user._id,
-                username:user.username,
-                email:user.email,
-                avatar:user.avatar,
-                
+        return res.status(201).json({
+            message: "User created successfully",
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
             }
-         })
-        
+        });
+
     } catch (error) {
-       return res.status(400).json({
-            message:"failed to create User",
-            message:error.message,
-        })
-     
-        
+        return res.status(500).json({
+            message: "Failed to create user",
+            error: error.message,
+        });
     }
 }
 
