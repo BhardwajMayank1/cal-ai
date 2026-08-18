@@ -128,11 +128,13 @@ async function getMe(req, res) {
         res.status(500).json({ message: 'Server error' });
     }
 }
-async function logout(req,res) {
-    res.clearCookie('token')
-    res.status(200).json({
-        message:'Logout successfully'
-    })
+async function logout(req, res) {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+    });
+    res.status(200).json({ message: 'Logout successfully' });
 }
 
 module.exports ={registerUser,loginUser,logout,getMe}
