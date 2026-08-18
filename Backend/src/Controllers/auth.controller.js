@@ -51,11 +51,11 @@ async function registerUser(req, res) {
         );
 
         res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+    httpOnly: true,
+    secure: true,        // must be true for sameSite: 'none' to work
+    sameSite: 'none',    // required for cross-site (Vercel <-> Render) cookies
+    maxAge: 24 * 60 * 60 * 1000,
+});
 
         return res.status(201).json({
             message: "User created successfully",
